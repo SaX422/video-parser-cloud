@@ -253,3 +253,10 @@ console.log(
   SOURCES.map((s, i) => `  ${i + 1}. ${s.name} — ${s.note}`).join('\n'),
   'color:#5b8cff;font-weight:600'
 );
+
+auto() {
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    return location.origin;          // 部署到 pages.dev 自动指向同源
+  }
+  return 'http://127.0.0.1:8787';    // file:// 双击打开时回落本地
+}
