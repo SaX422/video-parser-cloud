@@ -1,0 +1,12 @@
+# 安全与缓存策略（Cloudflare Pages 自动读取，无需构建）
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+/api/*
+  Cache-Control: no-store
+
+/index.html
+  Cache-Control: no-cache

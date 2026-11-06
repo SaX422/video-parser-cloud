@@ -1,0 +1,6 @@
+# Cloudflare Pages 配置（Git 集成时 Pages 主要读面板设置，本文件供 wrangler CLI 与本地 dev 使用）
+name = "video-parser"
+compatibility_date = "2026-11-01"
+
+# 页面就在仓库根目录，无需构建
+pages_build_output_dir = "."

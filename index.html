@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f1a" />
+<meta name="description" content="短视频解析工具：去水印直链提取，支持抖音/快手/B站/小红书/TikTok 等平台" />
+<title>短视频解析 · VideoParser</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%235b8cff'/%3E%3Cpath d='M8 6v12l10-6z' fill='%23fff'/%3E%3C/svg%3E" />
+</head>
+
+<body>
+<!-- ============ 背景层 ============ -->
+<div class="bg-layer" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+</div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="wrap">
+
+  <!-- ============ 顶栏 ============ -->
+  <header class="topbar glass">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 5.2v13.6l11-6.8z" fill="#fff"/></svg>
+      </div>
+      <div class="brand-txt">
+        <h1>短视频解析</h1>
+        <p>去水印 · 直链提取 · 图集下载</p>
+      </div>
+    </div>
+
+    <button class="icon-btn" id="themeBtn" title="切换主题" aria-label="切换主题">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M19.8 4.2l-1.7 1.7"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" id="settingsBtn" title="设置" aria-label="设置">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3.1"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.03 4.14l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ============ 输入面板 ============ -->
+  <section class="panel glass">
+    <p class="panel-title"><span class="dot"></span>粘贴分享链接或整段分享文案</p>
+
+    <div class="input-shell" id="inputShell">
+      <textarea id="url" spellcheck="false"
+        placeholder="例如：&#10;7.32 复制打开抖音，看看【xxx】的作品 https://v.douyin.com/xxxxx/&#10;&#10;支持直接粘贴整段带文字的分享内容，会自动提取链接"></textarea>
+      <button class="clear-btn" id="clearBtn" title="清空" aria-label="清空">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <!-- 平台徽标：检测到链接后会点亮 -->
+    <div class="chips" id="chips">
+      <span class="chip" data-p="douyin">抖音</span>
+      <span class="chip" data-p="kuaishou">快手</span>
+      <span class="chip" data-p="bilibili">B站</span>
+      <span class="chip" data-p="xiaohongshu">小红书</span>
+      <span class="chip" data-p="weishi">微视</span>
+      <span class="chip" data-p="tiktok">TikTok</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="parseBtn">
+        <span class="spinner"></span>
+        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5L20 7"/>
+        </svg>
+        <span id="parseBtnText">开始解析</span>
+      </button>
+
+      <button class="btn btn-ghost" id="pasteBtn" title="从剪贴板粘贴">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="3" width="12" height="16" rx="2.5"/>
+          <path d="M16 3h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-8"/>
+          <path d="M4 7v12a2 2 0 0 0 2 2h8"/>
+        </svg>
+        粘贴
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ 状态提示 ============ -->
+  <div class="status glass" id="status" role="status" aria-live="polite">
+    <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>
+      <path d="M12 8h.01M11 12h1v4h1"/></svg>
+    <span id="statusText">就绪</span>
+  </div>
+
+  <!-- ============ 解析步骤时间线 ============ -->
+  <div class="steps glass" id="steps">
+    <div class="step" data-step="0">
+      <span class="bullet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span>提取链接 / 识别平台</span>
+    </div>
+    <div class="step" data-step="1">
+      <span class="bullet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span>请求解析接口（多源降级）</span>
+    </div>
+    <div class="step" data-step="2">
+      <span class="bullet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span>解析响应 / 提取直链</span>
+    </div>
+    <div class="step" data-step="3">
+      <span class="bullet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span>完成</span>
+    </div>
+  </div>
+
+  <!-- ============ 结果区 ============ -->
+  <section class="result glass" id="result">
+    <div id="mediaWrap">
+      <div class="media-box" id="mediaBox">
+        <div class="skeleton"><span class="shimmer"></span></div>
+      </div>
+    </div>
+
+    <div id="galleryWrap" class="gallery" hidden></div>
+
+    <div class="info-grid" id="infoGrid"></div>
+
+    <div class="result-actions" id="resultActions">
+      <button class="res-btn" id="copyUrlBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="11" height="11" rx="2.4"/>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+        </svg>
+        复制直链
+      </button>
+      <a class="res-btn" id="downloadBtn" download target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v11m0 0l-4-4m4 4l4-4M4 19h16"/>
+        </svg>
+        下载
+      </a>
+      <button class="res-btn" id="openBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 4h6v6M20 4l-9 9M19 14v5a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 19V7.8A1.8 1.8 0 0 1 5.8 6H11"/>
+        </svg>
+        新窗口打开
+      </button>
+      <button class="res-btn" id="againBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 11a8 8 0 1 0-2.3 6.3M20 5v6h-6"/>
+        </svg>
+        重新解析
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ 页脚 ============ -->
+  <footer class="foot">
+    <p>解析逻辑参照 main.java 插件实现，仅供学习交流，请勿用于商业用途。</p>
+    <p>端口 <span id="apiCount">0</span> 个解析源 · 请求模式：<span id="modeLabel">智能</span></p>
+  </footer>
+</main>
+
+<!-- ============ 设置抽屉 ============ -->
+<div class="drawer-mask" id="drawerMask"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div>
+    <h2>设置</h2>
+    <p class="sub">请求策略与解析参数</p>
+  </div>
+
+  <div class="field">
+    <label>请求模式</label>
+    <div class="seg" id="modeSeg">
+      <button data-mode="auto" class="on">智能</button>
+      <button data-mode="direct">直连</button>
+      <button data-mode="proxy">代理</button>
+    </div>
+    <p class="hint">智能：先直连，遇 CORS 自动走代理。直连：仅用浏览器直发（需目标接口允许跨域）。代理：全部经代理前缀转发。</p>
+  </div>
+
+  <div class="field">
+    <label>代理前缀</label>
+    <input type="text" id="proxyPrefix" placeholder="https://your-gateway.com/?url=" />
+    <p class="hint">留空则使用内置公共代理列表。建议自建网关以保证稳定。</p>
+  </div>
+
+  <div class="field">
+    <label>请求超时（毫秒）</label>
+    <input type="number" id="timeout" min="1000" max="60000" step="500" value="15000" />
+  </div>
+
+  <div class="switch-row">
+    <span>自动播放结果视频</span>
+    <label class="switch">
+      <input type="checkbox" id="autoplay" checked />
+      <span class="track"></span><span class="knob"></span>
+    </label>
+  </div>
+
+  <div class="switch-row">
+    <span>跳过已失败的源（缓存）</span>
+    <label class="switch">
+      <input type="checkbox" id="skipFailed" checked />
+      <span class="track"></span><span class="knob"></span>
+    </label>
+  </div>
+
+  <div class="switch-row">
+    <span>显示解析步骤</span>
+    <label class="switch">
+      <input type="checkbox" id="showSteps" checked />
+      <span class="track"></span><span class="knob"></span>
+    </label>
+  </div>
+
+  <button class="btn btn-ghost" id="closeDrawer" style="margin-top:auto">关闭</button>
+</aside>
+
+<!-- ============ Toast 容器 ============ -->
+<div class="toasts" id="toasts" role="region" aria-live="polite"></div>
+
+<!-- ============ 图片灯箱 ============ -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="关闭">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+         stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <img id="lbImg" alt="预览大图" />
+</div>
+
+<!-- ============ API 清单（可在控制台查看） ============ -->
+<script src="api-registry.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
