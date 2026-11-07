@@ -658,7 +658,12 @@ function init() {
   // 网关自检：让用户一眼看出“页面能打开”和“解析能用”是两件事
   checkGateway().then((ok) => {
     if (ok) {
-      pushStatus('ok', '解析通道就绪 · 页面与接口同源（/api/*）');
+      let tag = '同源 /api/*';
+      try {
+        const u = new URL(R.GATEWAY.auto());
+        tag = R.GATEWAY.isExternal() ? '外部后端 ' + u.host : '同源 /api/*';
+      } catch (_) {}
+      pushStatus('ok', '解析通道就绪 · ' + tag);
     } else {
       const host = location.hostname;
       const local = host === '127.0.0.1' || host === 'localhost' || location.protocol === 'file:';
@@ -667,8 +672,9 @@ function init() {
         local
           ? '未检测到本地网关（127.0.0.1:8787）。解析会全部失败，请先在项目目录执行：python3 gateway.py，'
             + '并确保本页面是从 http://127.0.0.1:8787/ 打开的，而不是双击 index.html。'
-          : '未检测到 /api/health。云端部署时请确认仓库根目录存在 functions/api/*.js，'
-            + '并在 Cloudflare Pages 的构建输出目录设置为项目根目录。'
+          : '未检测到 /api/health。请确认仓库根目录存在 functions/api/*.js，构建输出目录为项目根目录；'
+            + '若 /api/health 正常但解析必失败（边缘访问不到国内解析源），可在地址后加 '
+            + '?api=https://你的后端域名 指向能直连解析源的网关（如 cloudflared 隧道）。'
       );
       toast(local ? '网关未启动：请先运行 python3 gateway.py' : '接口未部署：请检查 functions/ 目录', 'warn');
     }

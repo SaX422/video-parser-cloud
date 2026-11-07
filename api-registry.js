@@ -178,13 +178,60 @@ const DEFAULT_PROXIES = [];
 const GATEWAY = {
   // 允许在设置里覆盖；留空则自动推断
   override: '',
-  auto() {
+  // 外部后端地址持久化键（页面刷新后仍生效）
+  STORAGE_KEY: 'vp_gateway',
+
+  /**
+   * 解析当前应当使用的后端 base。
+   * 优先级：
+   *   1) 地址栏参数 ?api=https://xxx.trycloudflare.com   （会写入 localStorage，之后免参数）
+   *      ?api=local / origin / auto / default  → 清除记忆，回到同源
+   *   2) localStorage 里记忆的外部后端
+   *   3) override 字段
+   *   4) 当前页面 origin（Pages / 本地网关同源时天然正确）
+   *   5) file:// 打开时兜底本机 8787
+   */
+  resolve() {
+    let q = '';
+    try {
+      const qs = new URLSearchParams(location.search);
+      q = (qs.get('api') || qs.get('backend') || '').trim();
+    } catch (e) {
+      q = '';
+    }
+    if (q) {
+      if (/^(local|origin|auto|default|self)$/i.test(q)) {
+        try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
+      } else {
+        const v = /^https?:\/\//i.test(q) ? q : 'https://' + q;
+        const clean = v.replace(/\/+$/, '');
+        try { localStorage.setItem(this.STORAGE_KEY, clean); } catch (e) {}
+        return clean;
+      }
+    }
+    try {
+      const saved = (localStorage.getItem(this.STORAGE_KEY) || '').trim();
+      if (saved) return saved.replace(/\/+$/, '');
+    } catch (e) {}
     const o = (this.override || '').trim().replace(/\/+$/, '');
     if (o) return o;
     if (location.protocol === 'http:' || location.protocol === 'https:') {
       return location.origin;
     }
     return 'http://127.0.0.1:8787'; // file:// 打开时的兜底
+  },
+
+  /** 是否正在使用外部（非当前站点）后端 */
+  isExternal() {
+    try {
+      return new URL(this.resolve()).origin !== location.origin;
+    } catch (e) {
+      return true;
+    }
+  },
+
+  auto() {
+    return this.resolve();
   },
   parseUrl(u) {
     return `${this.auto()}/api/parse?url=${encodeURIComponent(u)}`;
@@ -253,10 +300,3 @@ console.log(
   SOURCES.map((s, i) => `  ${i + 1}. ${s.name} — ${s.note}`).join('\n'),
   'color:#5b8cff;font-weight:600'
 );
-
-auto() {
-  if (location.protocol === 'http:' || location.protocol === 'https:') {
-    return location.origin;          // 部署到 pages.dev 自动指向同源
-  }
-  return 'http://127.0.0.1:8787';    // file:// 双击打开时回落本地
-}

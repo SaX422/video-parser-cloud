@@ -331,4 +331,3 @@ export function healthPayload() {
     platforms: PLATFORM_RULES.map((p) => p[0]),
   };
 }
-
